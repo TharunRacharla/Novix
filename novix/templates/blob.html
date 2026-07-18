@@ -1,21 +1,13 @@
+{% load static%}
 <!DOCTYPE html>
-
 <html>
-
 <head>
-
-<link rel="stylesheet" href="style.css">
-
+<link rel="stylesheet" href="{% static 'css/style.css' %}" />
 </head>
-
 <body>
-
 <div id="blob">
     😊
 </div>
-
-<script src="blob.js"></script>
-
+<script src="{% static 'js/blob.js' %}"></script>
 </body>
-
 </html>

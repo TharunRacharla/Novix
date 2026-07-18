@@ -1,4 +1,8 @@
-/venv/
 *__pycache__/
 *.db
 *.sqlite3
+venv/
+node_modules/
+__pycache__/
+*.pyc
+db.sqlite3

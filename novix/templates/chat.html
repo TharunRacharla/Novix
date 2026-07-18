@@ -1,10 +1,12 @@
+{% load static %}
+
 <!DOCTYPE html>
 
 <html>
 
 <head>
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 </head>
 
@@ -26,7 +28,7 @@ Send
 
 </div>
 
-<script src="chat.js"></script>
+<script src="{% static 'js/chat.js' %}"></script>
 
 </body>
 

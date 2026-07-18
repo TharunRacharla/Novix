@@ -4,7 +4,7 @@ send.onclick = async ()=>{
 
     let text = document.getElementById("message").value;
 
-    const response = await fetch("http://127.0.0.1:8000/api/chat/",{
+    const response = await fetch("/chat/",{
 
         method:"POST",
 

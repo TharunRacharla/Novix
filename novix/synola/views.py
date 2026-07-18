@@ -8,6 +8,8 @@ def home(request):
     return render(request, "index.html")
 
 def chat(request):
+    if request.method != 'POST':
+        return JsonResponse({"error": "Use POST request"}, status=405)
 
     body = json.loads(request.body)
 
