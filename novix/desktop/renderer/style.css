@@ -1,0 +1,51 @@
+html, body {
+    width: 90px;
+    height: 90px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+img {
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
+#blobImage {
+    width: 76px;
+    height: 76px;
+    max-width: 76px;
+    max-height: 76px;
+    min-width: 76px;
+    min-height: 76px;
+    object-fit: contain;
+    display: block;
+    pointer-events: auto;
+    flex-shrink: 0;
+    transform: none !important;
+    scale: 1 !important;
+    transition: none !important;
+    cursor: grab;
+    image-rendering: auto;
+}
+
+#blobImage:hover {
+    transform: none !important;
+    scale: 1 !important;
+}
+
+#blobImage:active {
+    cursor: grabbing;
+}
