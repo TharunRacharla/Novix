@@ -1,17 +1,24 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="UTF-8" />
-		<link rel="stylesheet" href="./style.css" />
-	</head>
-	<body>
-		<div class="bubble">
-			<div id="messages"></div>
-			<div class="inputArea">
-				<input id="message" />
-				<button id="send">Send</button>
-			</div>
-		</div>
-		<script src="./chat.js"></script>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="card">
+      <div class="header">
+        <span class="dot"></span><span>Nova AI</span>
+        <div class="sp"></div>
+        <button>⚙</button>
+      </div>
+      <div id="messages" class="messages">
+        <div class="bot bubble">Hello! I am Synola, How can I help you?</div>
+      </div>
+      <div class="input">
+        <textarea id="msg" placeholder="Ask anything..."></textarea
+        ><button id="send">➜</button>
+      </div>
+    </div>
+    <script src="chat.js"></script>
+  </body>
 </html>
