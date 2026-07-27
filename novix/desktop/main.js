@@ -15,7 +15,7 @@ function create() {
     alwaysOnTop: false,
     webPreferences: { preload: path.join(__dirname, "preload.js") },
   });
-  // w.webPreferences.devTools;
+  w.webContents.openDevTools();
   w.loadFile(path.join(__dirname, "renderer", "chat.html"));
 }
 app.whenReady().then(create);
