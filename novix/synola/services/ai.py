@@ -15,18 +15,18 @@ OLLAMA_URL = "http://localhost:11434/api/chat" #REST API endpoint exposed by the
 MODEL = "llama3.2:1b-instruct-q4_0"
 
 
-def generate(prompt: str) -> str:
+def generate(messages):
     response = requests.post(
         OLLAMA_URL,
         json={
             "model": MODEL,
-            "messages": [
-            {"role": "user", "content": prompt}
-        ],
+            "messages": messages,
             "stream": False,
         },
         timeout=60,
     )
+    if not response.ok:
+        print(response.text)
 
     response.raise_for_status()
     return response.json()["message"]["content"].strip()

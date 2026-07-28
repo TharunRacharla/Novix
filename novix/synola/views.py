@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 import json
 from synola.services.ai import generate
+from synola.services.memory import get_conversation, add_content
 def home(request):
     return render(request, "index.html")
 
@@ -27,11 +28,13 @@ def chat(request):
 
     message = body.get("message", "").strip()
     print(message)
+    add_content(role='user', content=message)
     if not message:
         return JsonResponse({"error": "Message is required"}, status=400)
 
-    reply = generate(message)
-
+    reply = generate(get_conversation())
+    add_content(role='assistant', content=reply)
+    print(get_conversation())
     response = JsonResponse({"reply": reply})
     response["Access-Control-Allow-Origin"] = "*"
     return response

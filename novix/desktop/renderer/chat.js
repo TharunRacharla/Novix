@@ -70,6 +70,8 @@ document.getElementById("send").onclick = async () => {
 
     add(reply, "bot");
   } catch (err) {
+    // Remove loading
+    hideTyping();
     add(err.message || "Something went wrong", "bot");
   }
 };
