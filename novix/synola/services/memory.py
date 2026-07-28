@@ -1,7 +1,10 @@
-import sqlite3
+chat_memory = []
 
-conn = sqlite3.connect("chat.db")
+def add_content(role, content):
+    chat_memory.append({
+        "role":role,
+        "content":content
+    })
 
-cur = conn.cursor()
-
-cur.execute("CREATE table if not exists ")
+def get_conversation():
+    return chat_memory
