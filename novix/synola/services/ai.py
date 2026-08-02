@@ -16,6 +16,18 @@ MODEL = "llama3.2:1b-instruct-q4_0"
 
 
 def generate(messages):
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are Synola.\n"
+                "Always reply in English.\n"
+                "Never make up names or facts.\n"
+                "Only use information present in the conversation.\n"
+                "If the answer is unknown, say you don't know."
+            )
+        }
+    ] + messages
     response = requests.post(
         OLLAMA_URL,
         json={
@@ -23,7 +35,7 @@ def generate(messages):
             "messages": messages,
             "stream": False,
         },
-        timeout=60,
+        timeout=120,
     )
     if not response.ok:
         print(response.text)

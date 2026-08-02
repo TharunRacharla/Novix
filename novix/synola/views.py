@@ -26,14 +26,14 @@ def chat(request):
     except (json.JSONDecodeError, UnicodeDecodeError):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    message = body.get("message", "").strip()
+    message = body.get("message", "").strip()  #user's message
     print(message)
-    add_content(role='user', content=message)
+    add_content(role='user', content=message) #goes as user's request to current conversation
     if not message:
         return JsonResponse({"error": "Message is required"}, status=400)
 
     reply = generate(get_conversation())
-    add_content(role='assistant', content=reply)
+    add_content(role='assistant', content=reply) #goes as assistant's response to current conversation
     print(get_conversation())
     response = JsonResponse({"reply": reply})
     response["Access-Control-Allow-Origin"] = "*"
