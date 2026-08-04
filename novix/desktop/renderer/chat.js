@@ -12,12 +12,12 @@ function add(txt, c) { //will take input string and username
 }
 
 // loading animation js start
-  function showTyping() {
-    const div = document.createElement("div");
-    div.className = "bubble bot";
-    div.id = "typing";
+function showTyping() {
+  const div = document.createElement("div");
+  div.className = "bubble bot";
+  div.id = "typing";
 
-    div.innerHTML = `
+  div.innerHTML = `
       <div class="typing">
         <span></span>
         <span></span>
@@ -25,14 +25,14 @@ function add(txt, c) { //will take input string and username
       </div>
     `;
 
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-  }
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
 
-  function hideTyping() {
-    const typing = document.getElementById("typing");
-    if (typing) typing.remove();
-  }
+function hideTyping() {
+  const typing = document.getElementById("typing");
+  if (typing) typing.remove();
+}
 // loading animation end
 
 async function sendToBackend(message) {
@@ -82,3 +82,17 @@ text.onkeydown = (e) => {
     document.getElementById("send").click();
   }
 };
+
+// sidebar btn
+const menuBtn = document.getElementById("menuBtn");
+const card = document.getElementById("card");
+
+menuBtn.addEventListener("click", () => {
+  card.classList.toggle("open");
+});
+
+
+// close btn 
+document.getElementById("closeBtn").addEventListener("click", () => {
+  window.electronAPI.closeWindow();
+});
