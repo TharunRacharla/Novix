@@ -10,16 +10,14 @@
 			<!-- Sidebar -->
 			<div class="sidebar" id="sidebar">
 				<h3>Synola</h3>
-				<ul>
-					<li>🏠 Home</li>
-					<li>💬 Chats</li>
-					<li>⚙ Settings</li>
-					<li>❓ Help</li>
-				</ul>
+				<div class="sidebar-header">
+				<button id="new-chat">+ New Chat</button>
+				</div>
+				<div id="conversation-list"></div>
 			</div>
 
 			<!-- Chat Content -->
-			<div class="chat-content">
+			<div class="chat-area">
 				<div class="header">
 					<button class="menu-btn" id="menuBtn">
 						<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -52,7 +50,7 @@
 					<div class="bot bubble">Hello! I am Synola, How can I help you?</div>
 				</div>
 
-				<div class="input">
+				<div class="input-area">
 					<textarea id="msg" placeholder="Ask anything..."></textarea>
 					<button id="send">➜</button>
 				</div>
