@@ -7,6 +7,11 @@ from synola.services.ai import generate
 # from synola.services.memory import get_conversation, add_content
 from synola.models import Conversation, Message
 
+def json_response(data, status=200):
+    response = JsonResponse(data, status=status)
+    response["Access-Control-Allow-Origin"] = "*"
+    return response
+
 def home(request):
     return render(request, "index.html")
 
@@ -17,7 +22,7 @@ def conversations(request):
 
         data = Conversation.objects.order_by("-updated_at")
 
-        return JsonResponse({
+        return json_response({
             "conversations": [
                 {
                     "id": c.id,
@@ -33,12 +38,12 @@ def conversations(request):
 
         conversation = Conversation.objects.create()
 
-        return JsonResponse({
+        return json_response({
             "id": conversation.id,
             "title": conversation.title
         })
 
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+    return json_response({"error": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def conversation_detail(request, conversation_id):
@@ -47,7 +52,7 @@ def conversation_detail(request, conversation_id):
         conversation = Conversation.objects.get(id=conversation_id)
 
     except Conversation.DoesNotExist:
-        return JsonResponse(
+        return json_response(
             {"error": "Conversation not found"},
             status=404
         )
@@ -56,7 +61,7 @@ def conversation_detail(request, conversation_id):
 
         messages = conversation.messages.order_by("timestamp")
 
-        return JsonResponse({
+        return json_response({
             "id": conversation.id,
             "title": conversation.title,
             "messages": [
@@ -73,21 +78,21 @@ def conversation_detail(request, conversation_id):
 
         conversation.delete()
 
-        return JsonResponse({"status": "deleted"})
+        return json_response({"status": "deleted"})
 
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+    return json_response({"error": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def rename_conversation(request, conversation_id):
 
     if request.method != "PUT":
-        return JsonResponse({"error": "Use PUT"}, status=405)
+        return json_response({"error": "Use PUT"}, status=405)
 
     try:
         conversation = Conversation.objects.get(id=conversation_id)
 
     except Conversation.DoesNotExist:
-        return JsonResponse(
+        return json_response(
             {"error": "Conversation not found"},
             status=404
         )
@@ -97,7 +102,7 @@ def rename_conversation(request, conversation_id):
     conversation.title = body.get("title", conversation.title)
     conversation.save()
 
-    return JsonResponse({
+    return json_response({
         "id": conversation.id,
         "title": conversation.title
     })
@@ -112,27 +117,27 @@ def chat(request):
         return response
 
     if request.method != "POST":
-        return JsonResponse({"error": "Use POST request"}, status=405)
+        return json_response({"error": "Use POST request"}, status=405)
 
     try:
         body = json.loads(request.body.decode("utf-8")) #input message comes here as json
         print(body)
     except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
+        return json_response({"error": "Invalid JSON"}, status=400)
 
     conversation_id = body.get("conversation_id")
     message = body.get("message", "").strip()
 
     if not conversation_id:
-        return JsonResponse({"error": "conversation_id is required"}, status=400)
+        return json_response({"error": "conversation_id is required"}, status=400)
 
     if not message:
-        return JsonResponse({"error": "Message is required"}, status=400)
+        return json_response({"error": "Message is required"}, status=400)
 
     try:
         conversation = Conversation.objects.get(id=conversation_id)
     except Conversation.DoesNotExist:
-        return JsonResponse({"error": "Conversation not found"}, status=404)
+        return json_response({"error": "Conversation not found"}, status=404)
 
     Message.objects.create(
         conversation=conversation,
@@ -153,6 +158,4 @@ def chat(request):
         content=reply
     )
 
-    response = JsonResponse({"reply": reply})
-    response["Access-Control-Allow-Origin"] = "*"
-    return response
+    return json_response({"reply": reply})

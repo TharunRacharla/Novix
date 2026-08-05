@@ -150,13 +150,30 @@ textarea {
     top: 0;
     width: 220px;
     height: 100%;
-    background: #1d2740;
+    background: #202123;
     color: white;
     transform: translateX(-100%);
     transition: transform .3s ease;
     z-index: 10;
     padding: 20px;
     box-sizing: border-box;
+}
+
+.sidebar-header{
+
+    padding:15px;
+
+    border-bottom:1px solid #333;
+}
+
+
+#new-chat{
+
+    width:100%;
+
+    padding:10px;
+
+    cursor:pointer;
 }
 
 .sidebar ul{
@@ -167,6 +184,32 @@ textarea {
 .sidebar li{
     padding: 12px 0;
     cursor: pointer;
+}
+
+#conversation-list{
+
+    flex:1;
+
+    overflow-y:auto;
+}
+
+.conversation{
+
+    padding:12px;
+
+    cursor:pointer;
+
+    border-bottom:1px solid #2f3136;
+}
+
+.conversation:hover{
+
+    background:#2f3136;
+}
+
+.conversation.active{
+
+    background:#444654;
 }
 
 /* Chat Content */
