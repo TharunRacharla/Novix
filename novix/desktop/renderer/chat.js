@@ -157,6 +157,7 @@ function renderConversations(conversations) {
     list.innerHTML = "";
 
     conversations.forEach((c) => {
+
         // Conversation row
         const div = document.createElement("div");
         div.className = "conversation";
@@ -176,32 +177,36 @@ function renderConversations(conversations) {
         const menu = document.createElement("div");
         menu.className = "conversation-menu";
 
+        // =========================
         // Rename button
+        // =========================
         const renameBtn = document.createElement("button");
         renameBtn.innerText = "✏️ Rename";
+
         renameBtn.onclick = (e) => {
             e.stopPropagation();
-            const newName = prompt("Enter new conversation name:", c.title);
-            if (newName && newName.trim()) {
-                c.title = newName.trim();
-                // If you have a backend/database, update the conversation there too.
-                renderConversations(conversations);
-            }
+
+            // Close dropdown
+            menu.classList.remove("show");
+
+            // Open custom rename modal
+            openRenameModal(c, conversations);
         };
 
+        // =========================
         // Delete button
+        // =========================
         const deleteBtn = document.createElement("button");
         deleteBtn.innerText = "🗑️ Delete";
+
         deleteBtn.onclick = (e) => {
             e.stopPropagation();
-            if (confirm("Are you sure you want to delete this conversation?")) {
-                // Remove conversation
-                const index = conversations.findIndex((item) => item.id === c.id);
-                if (index !== -1) {
-                    conversations.splice(index, 1);
-                }
-                renderConversations(conversations);
-            }
+
+            // Close dropdown
+            menu.classList.remove("show");
+
+            // Open custom delete modal
+            openDeleteModal(c, conversations);
         };
 
         // Add buttons to menu
@@ -211,12 +216,14 @@ function renderConversations(conversations) {
         // Toggle menu
         menuBtn.onclick = (e) => {
             e.stopPropagation();
+
             // Close other open menus
             document.querySelectorAll(".conversation-menu").forEach((m) => {
                 if (m !== menu) {
                     m.classList.remove("show");
                 }
             });
+
             menu.classList.toggle("show");
         };
 
@@ -239,9 +246,189 @@ function renderConversations(conversations) {
         div.appendChild(title);
         div.appendChild(menuBtn);
         div.appendChild(menu);
+
         list.appendChild(div);
     });
 }
+
+
+// =====================================================
+// RENAME MODAL
+// =====================================================
+
+function openRenameModal(conversation, conversations) {
+
+    const modal = document.getElementById("rename-modal");
+    const input = document.getElementById("rename-input");
+    const cancelBtn = document.getElementById("rename-cancel-btn");
+    const confirmBtn = document.getElementById("rename-confirm-btn");
+
+    // Set current conversation name
+    input.value = conversation.title;
+
+    // Show modal
+    modal.classList.add("show");
+
+    // Focus input
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 100);
+
+    // Remove previous event handlers
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+
+    cancelBtn.replaceWith(newCancelBtn);
+    confirmBtn.replaceWith(newConfirmBtn);
+
+    // Cancel
+    newCancelBtn.onclick = () => {
+        closeRenameModal();
+    };
+
+    // Rename
+    newConfirmBtn.onclick = () => {
+        const newName = input.value.trim();
+
+        if (!newName) {
+            input.focus();
+            input.classList.add("input-error");
+
+            setTimeout(() => {
+                input.classList.remove("input-error");
+            }, 500);
+
+            return;
+        }
+
+        conversation.title = newName;
+
+        // If you have a backend/database,
+        console.log(`Renaming conversation ${conversation.id} to "${newName}"`);
+        renameConversation(conversation.id, newName);
+        // update the conversation there too.
+
+        closeRenameModal();
+
+        renderConversations(conversations);
+    };
+
+    // Rename using Enter key
+    input.onkeydown = (e) => {
+        if (e.key === "Enter") {
+            newConfirmBtn.click();
+        }
+
+        if (e.key === "Escape") {
+            closeRenameModal();
+        }
+    };
+}
+
+
+function closeRenameModal() {
+    const modal = document.getElementById("rename-modal");
+    modal.classList.remove("show");
+}
+
+async function renameConversation(id, newName) {
+    const response = await fetch(`${CONVERSATION_URL}${id}/rename/${newName}/`);
+
+    console.log("Rename response:", response);
+    // if (!response.ok) {
+    //     messages.innerHTML = "";
+    //     add("Unable to load conversation.", "bot");
+    //     return;
+    // }
+
+    // const data = await response.json();
+    // messages.innerHTML = "";
+    // data.messages.forEach((m) => {
+    //     add(m.content, m.role === "user" ? "user" : "bot");
+    // });
+}
+
+// =====================================================
+// DELETE MODAL
+// =====================================================
+
+function openDeleteModal(conversation, conversations) {
+
+    const modal = document.getElementById("delete-modal");
+    const cancelBtn = document.getElementById("delete-cancel-btn");
+    const confirmBtn = document.getElementById("delete-confirm-btn");
+
+    // Show conversation name
+    const nameElement = document.getElementById("delete-conversation-name");
+
+    if (nameElement) {
+        nameElement.innerText = conversation.title;
+    }
+
+    // Show modal
+    modal.classList.add("show");
+
+    // Remove previous event handlers
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+
+    cancelBtn.replaceWith(newCancelBtn);
+    confirmBtn.replaceWith(newConfirmBtn);
+
+    // Cancel
+    newCancelBtn.onclick = () => {
+        closeDeleteModal();
+    };
+
+    // Delete
+    newConfirmBtn.onclick = () => {
+
+        const index = conversations.findIndex(
+            (item) => item.id === conversation.id
+        );
+
+        if (index !== -1) {
+            conversations.splice(index, 1);
+        }
+
+        closeDeleteModal();
+
+        renderConversations(conversations);
+    };
+
+    // Escape key
+    document.onkeydown = (e) => {
+        if (e.key === "Escape") {
+            closeDeleteModal();
+        }
+    };
+}
+
+
+function closeDeleteModal() {
+    const modal = document.getElementById("delete-modal");
+    modal.classList.remove("show");
+}
+
+
+// =====================================================
+// CLOSE MODALS WHEN CLICKING BACKDROP
+// =====================================================
+
+document.addEventListener("click", (e) => {
+
+    const renameModal = document.getElementById("rename-modal");
+    const deleteModal = document.getElementById("delete-modal");
+
+    if (e.target === renameModal) {
+        closeRenameModal();
+    }
+
+    if (e.target === deleteModal) {
+        closeDeleteModal();
+    }
+});
 
 async function selectConversation(id) {
     if (currentConversation === id) return;

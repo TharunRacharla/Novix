@@ -69,6 +69,102 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- =========================
+     RENAME MODAL
+========================= -->
+
+		<div id="rename-modal" class="custom-modal">
+			<div class="custom-modal-box">
+				<div class="custom-modal-header">
+					<h3>Rename conversation</h3>
+					<button
+						type="button"
+						class="modal-close-btn"
+						onclick="closeRenameModal()"
+					>
+						×
+					</button>
+				</div>
+
+				<div class="custom-modal-body">
+					<label for="rename-input"> Conversation name </label>
+
+					<input
+						type="text"
+						id="rename-input"
+						placeholder="Enter conversation name"
+						autocomplete="off"
+					/>
+				</div>
+
+				<div class="custom-modal-footer">
+					<button
+						type="button"
+						id="rename-cancel-btn"
+						class="modal-btn modal-cancel-btn"
+					>
+						Cancel
+					</button>
+
+					<button
+						type="button"
+						id="rename-confirm-btn"
+						class="modal-btn modal-primary-btn"
+					>
+						Rename
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- =========================
+     DELETE MODAL
+========================= -->
+
+		<div id="delete-modal" class="custom-modal">
+			<div class="custom-modal-box delete-modal-box">
+				<div class="custom-modal-header">
+					<h3>Delete conversation?</h3>
+
+					<button
+						type="button"
+						class="modal-close-btn"
+						onclick="closeDeleteModal()"
+					>
+						×
+					</button>
+				</div>
+
+				<div class="custom-modal-body">
+					<p>
+						Are you sure you want to delete
+						<strong id="delete-conversation-name"></strong>?
+					</p>
+
+					<p class="delete-warning">This action cannot be undone.</p>
+				</div>
+
+				<div class="custom-modal-footer">
+					<button
+						type="button"
+						id="delete-cancel-btn"
+						class="modal-btn modal-cancel-btn"
+					>
+						Cancel
+					</button>
+
+					<button
+						type="button"
+						id="delete-confirm-btn"
+						class="modal-btn modal-delete-btn"
+					>
+						Delete
+					</button>
+				</div>
+			</div>
+		</div>
+
 		<script src="chat.js"></script>
 	</body>
 </html>
