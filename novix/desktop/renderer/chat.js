@@ -288,7 +288,7 @@ function openRenameModal(conversation, conversations) {
     };
 
     // Rename
-    newConfirmBtn.onclick = () => {
+    newConfirmBtn.onclick = async () => {
         const newName = input.value.trim();
 
         if (!newName) {
@@ -302,16 +302,14 @@ function openRenameModal(conversation, conversations) {
             return;
         }
 
-        conversation.title = newName;
-
-        // If you have a backend/database,
-        console.log(`Renaming conversation ${conversation.id} to "${newName}"`);
-        renameConversation(conversation.id, newName);
-        // update the conversation there too.
-
-        closeRenameModal();
-
-        renderConversations(conversations);
+        try {
+            await renameConversation(conversation.id, newName);
+            conversation.title = newName;
+            closeRenameModal();
+            renderConversations(conversations);
+        } catch (err) {
+            add(err.message || "Failed to rename conversation", "bot");
+        }
     };
 
     // Rename using Enter key
@@ -333,20 +331,20 @@ function closeRenameModal() {
 }
 
 async function renameConversation(id, newName) {
-    const response = await fetch(`${CONVERSATION_URL}${id}/rename/${newName}/`);
+    const url = `${CONVERSATION_URL}${id}/rename/`;
 
-    console.log("Rename response:", response);
-    // if (!response.ok) {
-    //     messages.innerHTML = "";
-    //     add("Unable to load conversation.", "bot");
-    //     return;
-    // }
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, name: newName }),
+    });
 
-    // const data = await response.json();
-    // messages.innerHTML = "";
-    // data.messages.forEach((m) => {
-    //     add(m.content, m.role === "user" ? "user" : "bot");
-    // });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to rename conversation");
+    }
+
+    return await response.json();
 }
 
 // =====================================================
@@ -382,19 +380,23 @@ function openDeleteModal(conversation, conversations) {
     };
 
     // Delete
-    newConfirmBtn.onclick = () => {
+    newConfirmBtn.onclick = async () => {
+        try {
+            await deleteConversation(conversation.id);
 
-        const index = conversations.findIndex(
-            (item) => item.id === conversation.id
-        );
+            const index = conversations.findIndex(
+                (item) => item.id === conversation.id
+            );
 
-        if (index !== -1) {
-            conversations.splice(index, 1);
+            if (index !== -1) {
+                conversations.splice(index, 1);
+            }
+
+            closeDeleteModal();
+            renderConversations(conversations);
+        } catch (err) {
+            add(err.message || "Failed to delete conversation", "bot");
         }
-
-        closeDeleteModal();
-
-        renderConversations(conversations);
     };
 
     // Escape key
@@ -409,6 +411,21 @@ function openDeleteModal(conversation, conversations) {
 function closeDeleteModal() {
     const modal = document.getElementById("delete-modal");
     modal.classList.remove("show");
+}
+
+async function deleteConversation(id) {
+    const url = `${CONVERSATION_URL}${id}/`;
+
+    const response = await fetch(url, {
+        method: "DELETE",
+    });
+
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to delete conversation");
+    }
+
+    return await response.json();
 }
 
 

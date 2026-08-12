@@ -6,6 +6,8 @@ import json
 from synola.services.ai import generate
 # from synola.services.memory import get_conversation, add_content
 from synola.models import Conversation, Message
+from django.shortcuts import get_object_or_404
+
 
 def json_response(data, status=200):
     response = JsonResponse(data, status=status)
@@ -85,27 +87,18 @@ def conversation_detail(request, conversation_id):
 @csrf_exempt
 def rename_conversation(request, conversation_id):
 
-    if request.method != "PUT":
-        return json_response({"error": "Use PUT"}, status=405)
-
-    try:
-        conversation = Conversation.objects.get(id=conversation_id)
-
-    except Conversation.DoesNotExist:
-        return json_response(
-            {"error": "Conversation not found"},
-            status=404
-        )
+    conversation = get_object_or_404(Conversation, id=conversation_id)
 
     body = json.loads(request.body)
+    new_name = body.get("name", "").strip()
 
-    conversation.title = body.get("title", conversation.title)
+    conversation.title = new_name
     conversation.save()
 
     return json_response({
         "id": conversation.id,
         "title": conversation.title
-    })
+    }, status=200)
 
 @csrf_exempt
 def chat(request):
