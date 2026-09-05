@@ -1,16 +1,53 @@
 {
-  "name": "desktop",
+  "name": "novix",
   "version": "1.0.0",
-  "main": "./main.js",
+  "description": "Novix local AI assistant",
+  "author": "Novix",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "electron": "^43.1.1"
+    "electron": "^43.1.1",
+    "electron-builder": "^26.15.3"
   },
-  "description": ""
+  "build": {
+    "appId": "com.novix.app",
+    "productName": "Novix",
+
+    "directories": {
+      "output": "release"
+    },
+
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*"
+    ],
+
+    "extraResources": [
+      {
+        "from": "../dist/novix-backend",
+        "to": "backend"
+      },
+      {
+        "from": "../.local_data/models/active_model.gguf",
+        "to": "model/active_model.gguf"
+      },
+      {
+        "from": "../.local_data/db.sqlite3",
+        "to": "database/db.sqlite3"
+      }
+    ],
+
+    "win": {
+      "target": "nsis"
+    },
+
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
 }

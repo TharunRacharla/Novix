@@ -424,8 +424,9 @@ async function deleteConversation(id) {
         const err = await response.json().catch(() => ({}));
         throw new Error(err.error || "Failed to delete conversation");
     }
-
+    window.location.reload();
     return await response.json();
+
 }
 
 

@@ -1,5 +1,9 @@
 # from django.utils import timezone
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # from synola.services.conversations import get_conversation
 
 # def add_content(role, content, conversation=None):

@@ -1,8 +1,23 @@
-*__pycache__/
+# Python
+__pycache__/
+*.py[cod]
+venv/
+
+# Local databases and configuration
 *.db
 *.sqlite3
-venv/
-node_modules/
-__pycache__/
-*.pyc
-db.sqlite3
+*.env
+
+# Build artifacts
+novix/build/
+novix/dist/
+novix/desktop/release/
+
+# Runtime logs
+novix/logs/
+
+# Node dependencies
+novix/desktop/node_modules/
+
+#db
+.local_data/

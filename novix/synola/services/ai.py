@@ -9,13 +9,66 @@ Endpoint	Purpose
 /api/show	Show model information
 """
 
+import logging
+
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/chat" #REST API endpoint exposed by the Ollama server
-MODEL = "llama3.2:1b-instruct-q4_0"
+logger = logging.getLogger(__name__)
+
+# OLLAMA_URL = "http://localhost:11434/api/chat" #REST API endpoint exposed by the Ollama server
+# MODEL = "llama3.2:1b-instruct-q4_0"
+
+OLLAMA_URL = "http://127.0.0.1:8090/v1/chat/completions" #REST API endpoint exposed by the Ollama server
+# MODEL = "llama3.2:1b-instruct-q4_0"
+
+def generate_summary(messages, existing_summary=None):
+    logger.info("Generating conversation summary for %d messages", len(messages))
+    summary_prompt = """
+        Your are a conversation summarization system.
+
+        Your task is to maintain a concise yet information rich summary of a conversation.
+
+        Preserve:
+        - important facts,
+        - decisions, 
+        - user preferences,
+        - goals,
+        - ongoing tasks,
+        - important technical details
+        - unresolved questions,
+        - relevant context needed for future replies
+
+        remove:
+        - greetings,
+        - repetitions
+        - unnecessary wordings
+        - conversation filler
+
+        the summary must repeesent the conversation accurately.
+        Do not invent any information.
+
+        return only the updated summary."""
+
+    if existing_summary:
+        summary_prompt += f"Existing summary: {existing_summary}"
+
+    summary_prompt += "New conversation messages: "
+    for message in messages:
+        summary_prompt += f"\n {message['role'].upper()}: {message['content']}"
+
+    response = requests.post(OLLAMA_URL, json={"messages": [{"role": "system", "content": summary_prompt,}], "stream":False}, timeout=120,)
+    logger.info("Summary generation returned HTTP %s", response.status_code)
+
+    if not response.ok:
+        logger.error("Ollama summary generation failed: %s", response.text)
+
+    response.raise_for_status()
+
+    return response.json()["choices"][0]["message"]["content"].strip()
 
 
-def generate(messages):
+def generate(messages): 
+    logger.info("Generating assistant response from %d messages", len(messages))
     messages = [
         {
             "role": "system",
@@ -31,14 +84,14 @@ def generate(messages):
     response = requests.post(
         OLLAMA_URL,
         json={
-            "model": MODEL,
             "messages": messages,
             "stream": False,
         },
         timeout=120,
     )
+    logger.info("Assistant generation returned HTTP %s", response.status_code)
     if not response.ok:
-        print(response.text)
+        logger.error("Ollama generation failed: %s", response.text)
 
     response.raise_for_status()
-    return response.json()["message"]["content"].strip()
+    return response.json()["choices"][0]["message"]["content"].strip()
