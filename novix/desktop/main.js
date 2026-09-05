@@ -1,6 +1,7 @@
 const { app, BrowserWindow, screen, ipcMain } = require("electron");
 const { spawn } = require("child_process");
 const { execFileSync } = require("child_process");
+const https = require("https");
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
@@ -8,6 +9,8 @@ const path = require("path");
 app.setName('Novix');
 
 let djangoProcess = null;
+const MODEL_URL = process.env.NOVIX_MODEL_URL ||
+  "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_0.gguf";
 
 function getBackendEnv() {
   return {
@@ -16,7 +19,82 @@ function getBackendEnv() {
   };
 }
 
-function ensureModelAvailable() {
+function getFreeDiskSpace(directory) {
+  const driveLetter = path.parse(directory).root[0];
+  return Number(execFileSync("powershell.exe", [
+    "-NoProfile",
+    "-Command",
+    `(Get-PSDrive -Name '${driveLetter}').Free`,
+  ], { encoding: "utf8" }).trim());
+}
+
+function downloadModel(url, destination, progress, attempt = 1) {
+  const partPath = `${destination}.part`;
+
+  return new Promise((resolve, reject) => {
+    const request = (requestUrl, redirects = 0) => {
+      if (redirects > 5) {
+        reject(new Error("Too many redirects while downloading the AI model."));
+        return;
+      }
+
+      const existingBytes = fs.existsSync(partPath) ? fs.statSync(partPath).size : 0;
+      const requestOptions = new URL(requestUrl);
+      if (existingBytes) {
+        requestOptions.headers = { Range: `bytes=${existingBytes}-` };
+      }
+
+      https.get(requestOptions, (response) => {
+        if ([301, 302, 303, 307, 308].includes(response.statusCode)) {
+          response.resume();
+          request(new URL(response.headers.location, requestUrl).toString(), redirects + 1);
+          return;
+        }
+
+        if (response.statusCode !== (existingBytes ? 206 : 200)) {
+          response.resume();
+          reject(new Error(`Model download failed with HTTP ${response.statusCode}.`));
+          return;
+        }
+
+        const responseLength = Number(response.headers["content-length"] || 0);
+        const totalBytes = existingBytes + responseLength;
+        const output = fs.createWriteStream(partPath, { flags: existingBytes ? "a" : "w" });
+        let downloaded = existingBytes;
+
+        response.on("data", (chunk) => {
+          downloaded += chunk.length;
+          progress(downloaded, totalBytes);
+        });
+        response.on("error", (error) => {
+          output.destroy();
+          reject(error);
+        });
+        output.on("error", reject);
+        output.on("finish", () => {
+          if (!fs.existsSync(partPath) || fs.statSync(partPath).size === 0) {
+            reject(new Error("The model download produced an empty file."));
+            return;
+          }
+          fs.renameSync(partPath, destination);
+          resolve();
+        });
+        response.pipe(output);
+      }).on("error", reject);
+    };
+
+    request(url);
+  }).catch((error) => {
+    if (attempt >= 3) {
+      throw new Error(`Model download failed after ${attempt} attempts: ${error.message}`);
+    }
+    console.warn(`Model download attempt ${attempt} failed: ${error.message}`);
+    return new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
+      .then(() => downloadModel(url, destination, progress, attempt + 1));
+  });
+}
+
+async function ensureModelAvailable() {
   const dataModelDir = path.join(app.getPath('userData'), "models");
   const activeModelPath = path.join(dataModelDir, "active_model.gguf");
 
@@ -25,29 +103,18 @@ function ensureModelAvailable() {
     return;
   }
 
-  const packagedModelPath = app.isPackaged
-    ? path.join(process.resourcesPath, "model", "active_model.gguf")
-    : path.join(__dirname, "..", ".local_data", "models", "active_model.gguf");
-
-  if (!fs.existsSync(packagedModelPath)) {
-    throw new Error(`Packaged model was not found: ${packagedModelPath}`);
-  }
-
   fs.mkdirSync(dataModelDir, { recursive: true });
-  const modelSize = fs.statSync(packagedModelPath).size;
-  const driveLetter = path.parse(dataModelDir).root[0];
-  const freeSpace = execFileSync("powershell.exe", [
-    "-NoProfile",
-    "-Command",
-    `(Get-PSDrive -Name '${driveLetter}').Free`,
-  ], { encoding: "utf8" }).trim();
-  const freeBytes = Number(freeSpace);
-  if (Number.isFinite(freeBytes) && freeBytes < modelSize * 1.5) {
-    throw new Error("Not enough free disk space to install the AI model.");
+  const freeBytes = getFreeDiskSpace(dataModelDir);
+  if (Number.isFinite(freeBytes) && freeBytes < 1024 * 1024 * 1024) {
+    throw new Error("Not enough free disk space to download the AI model. At least 1 GB is required.");
   }
 
-  fs.copyFileSync(packagedModelPath, activeModelPath);
-  console.log("Copied packaged model to:", activeModelPath);
+  console.log("Downloading AI model from:", MODEL_URL);
+  await downloadModel(MODEL_URL, activeModelPath, (downloaded, total) => {
+    const percent = total ? Math.floor((downloaded / total) * 100) : null;
+    console.log(`Model download: ${downloaded} bytes${percent === null ? "" : ` (${percent}%)`}`);
+  });
+  console.log("Downloaded AI model to:", activeModelPath);
 }
 
 function createErrorWindow(error) {
@@ -119,8 +186,8 @@ function waitForDjango(timeoutMs = 30000) {
   });
 }
 
-function startDjango() {
-  ensureModelAvailable();
+async function startDjango() {
+  await ensureModelAvailable();
   ensureDatabaseAvailable();
 
   const projectRoot = path.join(__dirname, "..");
@@ -239,7 +306,7 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   try {
-    startDjango();
+    await startDjango();
     await waitForDjango();
   } catch (error) {
     console.error("Backend startup failed:", error);

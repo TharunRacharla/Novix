@@ -32,10 +32,6 @@
         "to": "backend"
       },
       {
-        "from": "../.local_data/models/active_model.gguf",
-        "to": "model/active_model.gguf"
-      },
-      {
         "from": "../.local_data/db.sqlite3",
         "to": "database/db.sqlite3"
       }

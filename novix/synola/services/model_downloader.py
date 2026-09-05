@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 def download_model(url, dest_path, expected_sha_256=None, expected_size=None, progress_cb=None, max_retries=None):
     dest_path = str(dest_path)
     part_path = dest_path + ".part"
+    max_retries = max_retries or 3
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     logger.info("Starting model download to %s", dest_path)
 
     if expected_size:
@@ -20,10 +22,14 @@ def download_model(url, dest_path, expected_sha_256=None, expected_size=None, pr
         try:
             resume_from = os.path.getsize(part_path) if os.path.exists(part_path) else 0
             logger.info("Model download attempt %d, resuming at %d bytes", attempt + 1, resume_from)
-            headers = {"Range": f"bytes = {resume_from}-"} if resume_from else {}
+            headers = {"Range": f"bytes={resume_from}-"} if resume_from else {}
             with requests.get(url, headers=headers, stream=True, timeout=30) as r:
                 r.raise_for_status()
-                total = resume_from + int(r.headers.get("context-length", 0))
+                if resume_from and r.status_code != 206:
+                    os.remove(part_path)
+                    resume_from = 0
+                    raise requests.ConnectionError("Download server does not support resume")
+                total = resume_from + int(r.headers.get("content-length", 0))
                 downloaded = resume_from
                 with open(part_path, "ab" if resume_from else "wb") as f:
                     for chunk in r.iter_content(chunk_size=1024*1024):
@@ -38,7 +44,11 @@ def download_model(url, dest_path, expected_sha_256=None, expected_size=None, pr
                 raise
             time.sleep(2 ** attempt) #back off than resume from where it left off
 
-    if expected_sha_256 and _sha256(part_path != expected_sha_256):
+    if expected_size and os.path.getsize(part_path) != expected_size:
+        logger.error("Downloaded model size did not match expected size")
+        os.remove(part_path)
+        raise RuntimeError("Downloaded model size is incorrect")
+    if expected_sha_256 and _sha256(part_path) != expected_sha_256.lower():
         logger.error("Checksum validation failed for %s", part_path)
         os.remove(part_path)
         raise RuntimeError("Checksum mismatch - file corrupted, download aborted")

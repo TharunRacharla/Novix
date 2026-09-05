@@ -8,6 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from synola.models import Conversation, Message
 from synola.services.ai import generate, generate_summary
 from synola.services.context_manager import build_context, create_or_update_summary
+from synola.services.model_downloader import download_model
+from synola.services.model_manager import STAGING_PATH, swap_model
 
 logger = logging.getLogger(__name__)
 
@@ -132,3 +134,37 @@ def chat(request):
         return json_response({"error": "Unable to generate response"}, status=500)
 
     return json_response({"reply": reply})
+
+
+@csrf_exempt
+def model_swap(request):
+    if request.method != "POST":
+        return json_response({"error": "Use POST request"}, status=405)
+
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+        url = body["url"]
+        metadata = {
+            "display_name": body["display_name"],
+            "source_url": url,
+            "sha_256": body.get("sha_256", ""),
+            "size_bytes": int(body["size_bytes"]),
+            "context_length": int(body.get("context_length", 4096)),
+        }
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
+        return json_response({"error": "url, display_name, and size_bytes are required"}, status=400)
+
+    try:
+        download_model(
+            url,
+            STAGING_PATH,
+            expected_sha_256=metadata["sha_256"] or None,
+            expected_size=metadata["size_bytes"],
+            max_retries=3,
+        )
+        swap_model(STAGING_PATH, metadata)
+    except Exception:
+        logger.exception("Model replacement failed")
+        return json_response({"error": "Model replacement failed"}, status=500)
+
+    return json_response({"status": "active", "display_name": metadata["display_name"]})

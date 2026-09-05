@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 from synola.models import Conversation, ConversationSummary, Message
 from synola.services import ai
 from synola.services.context_manager import build_context
-from synola.services.inference_engine import InforenceEngine
+from synola.services.inference_engine import InferenceEngine
 
 
 class BuildContextTests(TestCase):
@@ -60,7 +60,7 @@ class InferenceEngineTests(TestCase):
         runtime_config.return_value = {"threads": 2, "ctx_size": 2048}
         active_path.exists.return_value = True
         get.return_value.status_code = 200
-        engine = InforenceEngine()
+        engine = InferenceEngine()
 
         engine.start()
         engine.stop()

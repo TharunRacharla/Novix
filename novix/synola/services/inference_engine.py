@@ -11,23 +11,24 @@ ACTIVE_PATH = settings.DATA_DIR / "models" / "active_model.gguf"
 BINARY = settings.BASE_DIR / "resources" / "llama" / "cpu" / "llama-b10818-bin-win-cpu-x64" / "llama-server.exe"
 PORT = 8090
 
-class InforenceEngine:
+class InferenceEngine:
     def __init__(self):
         self.process = None
 
-    def start(self):
-        logger.info("Starting inference engine with model %s", ACTIVE_PATH)
+    def start(self, model_path=None):
+        model_path = model_path or ACTIVE_PATH
+        logger.info("Starting inference engine with model %s", model_path)
         if self.process and self.process.poll() is None:
             logger.info("Inference engine is already running")
             return
-        if not ACTIVE_PATH.exists():
-            logger.error("Active model was not found at %s", ACTIVE_PATH)
+        if not model_path.exists():
+            logger.error("Model was not found at %s", model_path)
             raise RuntimeError("No model installed, run first-time setup")
         if not BINARY.exists():
             logger.error("llama-server executable was not found at %s", BINARY)
             raise RuntimeError("llama.cpp runtime is missing")
         cfg = pick_runtime_config()
-        self.process = subprocess.Popen([str(BINARY), "-m", str(ACTIVE_PATH), "--host", "127.0.0.1", "--port", str(PORT), "-t", str(cfg["threads"]), "-c", str(cfg["ctx_size"]), "--chat-template", "llama3"])
+        self.process = subprocess.Popen([str(BINARY), "-m", str(model_path), "--host", "127.0.0.1", "--port", str(PORT), "-t", str(cfg["threads"]), "-c", str(cfg["ctx_size"]), "--chat-template", "llama3"])
         logger.info("llama-server process started with PID %s", self.process.pid)
         try:
             self._wait_healthy()
@@ -58,4 +59,4 @@ class InforenceEngine:
 
 
 
-engine = InforenceEngine()
+engine = InferenceEngine()
