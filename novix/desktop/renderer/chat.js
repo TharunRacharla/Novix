@@ -3,7 +3,50 @@ const text = document.getElementById("msg"); // input message
 
 const API_URL = "http://127.0.0.1:8000/chat/";
 const CONVERSATION_URL = "http://127.0.0.1:8000/conversations/";
+const RECOMMENDATION_URL = "http://127.0.0.1:8000/models/recommendation/";
 let currentConversation = null;
+
+async function loadRecommendation() {
+    const model = document.getElementById("recommendation-model");
+    const reason = document.getElementById("recommendation-reason");
+    const installButton = document.getElementById("install-recommendation");
+    const status = document.getElementById("recommendation-status");
+
+    try {
+        const response = await fetch(RECOMMENDATION_URL);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Recommendation unavailable");
+
+        const recommendation = data.recommendation;
+        model.textContent = recommendation.model.model;
+        reason.textContent = recommendation.reason;
+        installButton.disabled = !recommendation.installable;
+        status.textContent = recommendation.installable
+            ? "Ready to install"
+            : "Download details are not configured yet";
+    } catch (error) {
+        model.textContent = "Recommendation unavailable";
+        reason.textContent = error.message;
+        status.textContent = "";
+    }
+}
+
+async function installRecommendation() {
+    const button = document.getElementById("install-recommendation");
+    const status = document.getElementById("recommendation-status");
+    button.disabled = true;
+    status.textContent = "Installing...";
+
+    try {
+        const response = await fetch(RECOMMENDATION_URL, { method: "POST" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Installation failed");
+        status.textContent = `Active: ${data.recommendation.model.model}`;
+    } catch (error) {
+        status.textContent = error.message;
+        button.disabled = false;
+    }
+}
 
 async function createConversation() {
     const response = await fetch(CONVERSATION_URL, {
@@ -128,6 +171,7 @@ async function submitMessage() {
 }
 
 document.getElementById("send").onclick = submitMessage;
+document.getElementById("install-recommendation").onclick = installRecommendation;
 
 text.onkeydown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -476,3 +520,4 @@ document.getElementById("closeBtn").addEventListener("click", () => {
 });
 
 initConversations();
+loadRecommendation();

@@ -25,6 +25,10 @@
       "preload.js",
       "renderer/**/*"
     ],
+    "compression": "maximum",
+    "electronLanguages": [
+      "en-US"
+    ],
 
     "extraResources": [
       {

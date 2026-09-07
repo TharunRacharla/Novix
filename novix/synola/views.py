@@ -10,6 +10,8 @@ from synola.services.ai import generate, generate_summary
 from synola.services.context_manager import build_context, create_or_update_summary
 from synola.services.model_downloader import download_model
 from synola.services.model_manager import STAGING_PATH, swap_model
+from synola.services.hardware import get_hardware_profile
+from synola.services.model_recommender import install_recommended_model, recommend_model
 
 logger = logging.getLogger(__name__)
 
@@ -168,3 +170,29 @@ def model_swap(request):
         return json_response({"error": "Model replacement failed"}, status=500)
 
     return json_response({"status": "active", "display_name": metadata["display_name"]})
+
+
+@csrf_exempt
+def model_recommendation(request):
+    if request.method == "GET":
+        try:
+            profile = get_hardware_profile()
+            suggestion = recommend_model(profile)
+        except (OSError, RuntimeError, ValueError):
+            logger.exception("Could not create model recommendation")
+            return json_response({"error": "Unable to create a model recommendation"}, status=500)
+        return json_response({"hardware": profile, "recommendation": suggestion})
+
+    if request.method == "POST":
+        try:
+            profile = get_hardware_profile()
+            suggestion = recommend_model(profile)
+            if not suggestion["installable"]:
+                return json_response({"error": "The recommendation is not available for download yet"}, status=409)
+            install_recommended_model(suggestion)
+        except (OSError, RuntimeError, ValueError):
+            logger.exception("Could not install recommended model")
+            return json_response({"error": "Unable to install recommended model"}, status=500)
+        return json_response({"status": "active", "recommendation": suggestion})
+
+    return json_response({"error": "Use GET or POST request"}, status=405)

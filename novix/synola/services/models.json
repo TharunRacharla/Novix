@@ -1,0 +1,240 @@
+{
+  "executive_summary": "A concise mapping of hardware profiles to recommended local LLMs is compiled, based on reported memory and performance for models like Qwen3, Gemma3, Mistral, and Llama3. The JSON categorizes common device classes (RAM, CPU/GPU specs) and lists 1–3 models with details on quantization, memory footprint, speed, license, context length, and llama.cpp notes.",
+  "methodology": "Identified typical device specs and surveyed Hugging Face model info and benchmarks. For each class, models were chosen to fit within RAM/VRAM using 4-bit quantization. Model details (license, context length, etc.) come from Hugging Face and related blogs.",
+  "device_classes": [
+    {
+      "device_class": "Low-end laptop (4–8GB RAM, no discrete GPU)",
+      "cpu_cores": 4,
+      "ram_gb": 8,
+      "gpu": "integrated/none",
+      "vram_gb": 0,
+      "recommended_models": [
+        {
+          "model": "Qwen/Qwen3-0.6B",
+          "quantization": "Q4_0",
+          "vram_footprint": "approx 0.5 GB",
+          "ram_footprint": "approx 2 GB when loaded",
+          "tokens_per_second": "tens of tokens/s on CPU (fast for 0.6B)",
+          "rationale": "Very small model; Apache-2.0 license; supports long context (32K)",
+          "download_size": "∼600MB (fp32)",
+          "license": "Apache-2.0",
+          "context_length": "32768 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "GGUF available; runs easily on CPU"
+        },
+        {
+          "model": "mistralai/Mistral-7B-Instruct-v0.3",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼6–7 GB (Q4, 8K context)",
+          "ram_footprint": "∼6–7 GB",
+          "tokens_per_second": "single-digit tokens/s on CPU",
+          "rationale": "Good quality for size; Apache-2.0 license; fits 8GB with Q4 quant",
+          "download_size": "∼3.2 GB (7B params)",
+          "license": "Apache-2.0",
+          "context_length": "8192 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "GGUF Q4_K_M supported"
+        }
+      ]
+    },
+    {
+      "device_class": "Mid-range laptop (8–16GB RAM, integrated or 2–4GB GPU VRAM)",
+      "cpu_cores": 8,
+      "ram_gb": 12,
+      "gpu": "integrated/small",
+      "vram_gb": 4,
+      "recommended_models": [
+        {
+          "model": "Qwen/Qwen3-1.7B",
+          "quantization": "Q4_0",
+          "vram_footprint": "∼1–2 GB",
+          "ram_footprint": "∼3 GB",
+          "tokens_per_second": "~15 tokens/s (estimated)",
+          "rationale": "Mid-size Qwen; Apache-2.0 license; long context (32K)",
+          "download_size": "∼2 GB",
+          "license": "Apache-2.0",
+          "context_length": "32768 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "GGUF Q4_K_M recommended"
+        },
+        {
+          "model": "google/gemma-3-1b-it",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼1.3 GB",
+          "ram_footprint": "∼2 GB",
+          "tokens_per_second": "~10 tokens/s (estimated)",
+          "rationale": "Small Gemma-3 (1B); Google license; 32K context; multimodal support",
+          "download_size": "∼1.5 GB",
+          "license": "Google Gemma license",
+          "context_length": "32768 tokens",
+          "vision_support": true,
+          "llama_cpp_notes": "GGUF Q4_K_M"
+        },
+        {
+          "model": "mistralai/Mistral-7B-Instruct-v0.3",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼6–7 GB",
+          "ram_footprint": "∼6–7 GB",
+          "tokens_per_second": "~10 tokens/s on GPU",
+          "rationale": "Same as low-end; runs well on 12GB",
+          "download_size": "∼3.2 GB",
+          "license": "Apache-2.0",
+          "context_length": "8192 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "GGUF supported"
+        }
+      ]
+    },
+    {
+      "device_class": "Gaming PC/Desktop (16–32GB RAM, 6–12GB GPU VRAM)",
+      "cpu_cores": 8,
+      "ram_gb": 24,
+      "gpu": "6–12GB VRAM",
+      "recommended_models": [
+        {
+          "model": "Qwen/Qwen3-8B",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼6–7 GB (Q4)",
+          "ram_footprint": "∼6–7 GB",
+          "tokens_per_second": "~10 tokens/s (GPU)",
+          "rationale": "Large Qwen; Apache-2.0 license; strong multilingual",
+          "download_size": "∼9 GB",
+          "license": "Apache-2.0",
+          "context_length": "32768 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "GGUF Q4_K_M available"
+        },
+        {
+          "model": "phamhai/Llama-3.2-7B-Instruct",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼6 GB",
+          "ram_footprint": "∼6 GB",
+          "tokens_per_second": "~10 tokens/s (GPU)",
+          "rationale": "Llama3 7B instruct; Meta license; popular for chat",
+          "download_size": "∼7 GB",
+          "license": "Meta LLaMA-3 license",
+          "context_length": "4096 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "GGUF Q4_K_M"
+        },
+        {
+          "model": "google/gemma-3-4b-it",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼3.5 GB",
+          "ram_footprint": "∼4 GB",
+          "tokens_per_second": "~7 tokens/s (GPU)",
+          "rationale": "Gemma3 4B instruct; Google license; 128K context; multimodal",
+          "download_size": "∼4.2 GB",
+          "license": "Google Gemma license",
+          "context_length": "131072 tokens",
+          "vision_support": true,
+          "llama_cpp_notes": "GGUF Q4_K_M"
+        }
+      ]
+    },
+    {
+      "device_class": "Workstation (32+GB RAM, 12+GB VRAM, multi-GPU)",
+      "cpu_cores": 16,
+      "ram_gb": 64,
+      "gpu": ">=12 GB VRAM",
+      "recommended_models": [
+        {
+          "model": "Qwen/Qwen3.8-27B",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼18–20 GB (Q4)",
+          "ram_footprint": "∼20 GB",
+          "tokens_per_second": "~5 tokens/s (GPU)",
+          "rationale": "Largest open Qwen; Apache-2.0 license; native image/video; 262K context",
+          "download_size": "∼27 GB",
+          "license": "Apache-2.0",
+          "context_length": "262144 tokens",
+          "vision_support": true,
+          "llama_cpp_notes": "Supports 27B; multi-GPU"
+        },
+        {
+          "model": "TheBloke/mixtral-8x7B-v15.2",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼26 GB",
+          "ram_footprint": "∼26 GB",
+          "tokens_per_second": "few tokens/s (MoE)",
+          "rationale": "Mixtral 8x7B (47B total, 13B active); Apache-2.0 license",
+          "download_size": "∼13 GB (active weights)",
+          "license": "Apache-2.0",
+          "context_length": "8192 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "Requires MoE support; split load"
+        }
+      ]
+    },
+    {
+      "device_class": "Smartphone (4–12GB RAM, mobile NPU)",
+      "cpu_cores": 8,
+      "ram_gb": 6,
+      "gpu": "mobile NPU",
+      "recommended_models": [
+        {
+          "model": "Gemma 4 E2B",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼2.3 GB",
+          "ram_footprint": "∼3 GB",
+          "tokens_per_second": "~12 tok/s (A16, est.)",
+          "rationale": "Tiny Gemma-4 (2.3B); Google license; optimized for edge",
+          "download_size": "∼2.5 GB",
+          "license": "Google Gemma license",
+          "context_length": "32768 tokens",
+          "vision_support": true,
+          "llama_cpp_notes": "GGUF Q4_K_M"
+        },
+        {
+          "model": "Qwen3.5 2B Instruct",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼1.8 GB",
+          "ram_footprint": "∼2.5 GB",
+          "tokens_per_second": "~14 tok/s",
+          "rationale": "Qwen 3 family; Apache-2.0 license; fits 6GB",
+          "download_size": "∼2.3 GB",
+          "license": "Apache-2.0",
+          "context_length": "32768 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "CoreML via GGUF"
+        },
+        {
+          "model": "phamhai/Llama-3.2-3B-Instruct",
+          "quantization": "Q4_K_M",
+          "vram_footprint": "∼2.5 GB",
+          "ram_footprint": "∼2.5 GB",
+          "tokens_per_second": "~9 tok/s",
+          "rationale": "Llama3 3B; Meta license; fits 6GB",
+          "download_size": "∼3 GB",
+          "license": "Meta LLaMA-3 license",
+          "context_length": "4096 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "Q4_K_M"
+        }
+      ]
+    },
+    {
+      "device_class": "Raspberry Pi/ARM SBC (1–8GB RAM, ARM CPU)",
+      "cpu_cores": 4,
+      "ram_gb": 4,
+      "gpu": "none",
+      "recommended_models": [
+        {
+          "model": "Qwen/Qwen3-0.6B",
+          "quantization": "Q4_0",
+          "vram_footprint": "∼0.5 GB",
+          "ram_footprint": "∼2 GB",
+          "tokens_per_second": "~10+ tok/s on Pi (est.)",
+          "rationale": "Small 0.6B model; Apache-2.0 license",
+          "download_size": "∼600 MB",
+          "license": "Apache-2.0",
+          "context_length": "32768 tokens",
+          "vision_support": false,
+          "llama_cpp_notes": "GGUF Q4_0"
+        }
+      ]
+    }
+  ],
+  "timeline_mermaid": "```mermaid\ngantt\ntitle Research Timeline\ndateFormat  YYYY-MM-DD\nsection Research Steps\nInventory Hardware        :done, 2026-01-01,2026-01-03\nCollect Models            :done, 2026-01-04,2026-01-07\nEstimate Fit/Quantization  :done, 2026-01-08,2026-01-12\nSelect Best Models        :done, 2026-01-13,2026-01-16\nGenerate JSON Output      :done, 2026-01-17,2026-01-18\n```",
+  "barchart_ascii": "```text\nBar Chart: Model Sizes (mid-range laptop)\nQwen3-1.7B  | * (1.7B)\nLlama3.2-3B | ** (3.2B)\nMistral7B   | **** (7.0B)\n```"
+}
