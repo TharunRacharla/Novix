@@ -24,12 +24,7 @@ Model downloads require an internet connection. Once a model and its runtime are
 - **Long conversation context:** The backend keeps recent messages in context and creates/updates a summary after a threshold of unsummarized messages.
 
 ## Screenshots and demo
-
-There is no UI screenshot, hosted demo, or demo account included in the repository. The image below is the available mascot artwork; it is **not** a screenshot of the running application.
-
-![Novix mascot artwork (not an application screenshot)](novix/desktop/assets/blob.png)
-
-> **Screenshot placeholder:** Add a screenshot of the running chat window and model settings here when one is available.
+--
 
 ## Technology
 
