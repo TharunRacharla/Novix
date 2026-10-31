@@ -23,3 +23,6 @@ novix/desktop/node_modules/
 
 #db
 .local_data/
+
+# Private local documentation
+/TECHNICAL_DETAILS.md
